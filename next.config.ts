@@ -4,6 +4,7 @@ const supabaseUrl = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "https://pla
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  basePath: process.env.NEXT_BASE_PATH || "",
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },
