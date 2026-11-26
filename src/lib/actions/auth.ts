@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 
 import { audit } from '@/lib/audit'
 import { ORG_COOKIE, requireUser, type OrgContext } from '@/lib/auth'
-import { env } from '@/lib/env'
+import { env, isSupabaseConfigured } from '@/lib/env'
 import { setActiveOrg } from '@/lib/actions/set-org'
 import { getAdminClient } from '@/lib/supabase/admin'
 import { getServerClient } from '@/lib/supabase/server'
@@ -62,6 +62,13 @@ export async function loginAction(input: LoginInput): Promise<ActionResult> {
 export async function signupAction(
   input: SignupInput,
 ): Promise<ActionResult<{ needsEmailConfirmation: boolean }>> {
+  if (!isSupabaseConfigured) {
+    return {
+      ok: false,
+      error: 'Account creation is not available yet. The FimiT authentication service has not been configured.',
+    }
+  }
+
   const parsed = signupSchema.safeParse(input)
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input.' }

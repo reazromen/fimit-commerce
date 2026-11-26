@@ -22,7 +22,8 @@ This is an application preview only. It is not yet a functional multi-tenant Saa
 
 - Supabase is not running on HServer for this project.
 - Public Supabase URL, anon key and service-role key are deliberate placeholders.
-- Signup, login, database-backed catalogue, checkout, file storage and merchant administration cannot be considered operational.
+- Signup is explicitly blocked with a configuration message until real Supabase credentials are supplied; it must not attempt requests to the placeholder host. Login, database-backed catalogue, checkout, file storage and merchant administration cannot be considered operational.
+- The signup password field includes an accessible show/hide control.
 - No real merchant or customer data should be entered.
 - The full self-hosted Supabase stack was deferred because HServer had approximately 12 GB free disk at deployment time and already hosts many services.
 - The public hostname uses the existing Ops ingress and TLS; the application upstream remains Tailscale-bound.
