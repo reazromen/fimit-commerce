@@ -1,7 +1,6 @@
-# Scarpar — Developer extension guide
+# The FimiT — Developer extension guide
 
-This is the **repo-local source of truth** for extending Scarpar — the `scarpar-builder` skill
-(`~/.claude/skills/scarpar-builder/`) defers to this file rather than duplicating it. Read
+This is the **repo-local source of truth** for extending The FimiT — the codebase conventions and implementation plan in this repository. Read
 `docs/architecture.md` (binding contract) and `docs/conventions.md` (binding build rules) first; this
 doc is recipes on top of those, not a replacement.
 

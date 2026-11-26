@@ -16,6 +16,12 @@ export interface Org {
   slug: string
   vertical: Vertical
   plan: string
+  plan_key: string | null
+  subscription_status: 'trialing' | 'active' | 'past_due' | 'suspended' | 'cancelled'
+  trial_ends_at: string | null
+  current_period_start: string | null
+  current_period_end: string | null
+  grace_period_end: string | null
   enabled_modules: string[]
   currency: string
   country: string
@@ -118,5 +124,82 @@ export interface DocSequence {
 
 export interface PlatformAdmin {
   user_id: string
+  created_at: string
+}
+
+
+export interface PlatformPlan {
+  id: string
+  plan_key: string
+  name: string
+  description: string | null
+  price_paisa: number
+  billing_interval: 'monthly' | 'yearly'
+  trial_days: number
+  limits: Json
+  available_modules: string[]
+  is_active: boolean
+  position: number
+  created_at: string
+  updated_at: string
+}
+
+export interface PlatformSubscription {
+  id: string
+  org_id: string
+  plan_key: string
+  status: 'trialing' | 'active' | 'past_due' | 'suspended' | 'cancelled'
+  billing_interval: 'monthly' | 'yearly'
+  current_period_start: string | null
+  current_period_end: string | null
+  trial_ends_at: string | null
+  grace_period_end: string | null
+  cancel_at_period_end: boolean
+  provider: string | null
+  provider_customer_ref: string | null
+  provider_subscription_ref: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PlatformInvoice {
+  id: string
+  org_id: string
+  subscription_id: string | null
+  invoice_no: string
+  amount_paisa: number
+  currency: string
+  status: 'draft' | 'pending' | 'paid' | 'void' | 'overdue' | 'refunded'
+  payment_method: string | null
+  provider: string | null
+  provider_reference: string | null
+  description: string | null
+  due_at: string | null
+  paid_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CustomDomain {
+  id: string
+  org_id: string
+  hostname: string
+  status: 'pending' | 'verified' | 'disabled'
+  verification_token: string
+  verified_at: string | null
+  verified_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PlatformPaymentEvent {
+  id: string
+  org_id: string
+  invoice_id: string | null
+  provider: string
+  event_id: string
+  event_type: string
+  payload: Json
+  processed_at: string | null
   created_at: string
 }

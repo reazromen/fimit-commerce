@@ -1,33 +1,28 @@
-# Scarpar — Production runbook
+# The FimiT — Production runbook
 
-Companion to `docs/deployment.md` (initial setup) — this covers running Scarpar after it's live.
-Grounded against the code as of 2026-07-12; where behavior is "verified precisely" below it was traced
+Companion to `docs/deployment.md` (initial setup) — this covers running The FimiT after it's live.
+Grounded against the code as of 2026-11-26; where behavior is "verified precisely" below it was traced
 in the actual source, not assumed from the architecture spec.
 
 ## Migration discipline going forward
 
-Current state: 4 migrations (`supabase/migrations/0001_core.sql` → `0004_storefront_public_org_read.sql`),
-applied in order via SQL Editor or `supabase db push`, no rollback tooling, no migration-runner CI step.
+Current state: 5 migrations (`supabase/migrations/0001_core.sql` → `0005_platform_saas_domains.sql`), applied in order against the self-hosted Supabase Postgres container. There is no automatic rollback tooling; each migration is forward-only.
 
-- **One file per change, numbered sequentially** (`0005_*.sql`, `0006_*.sql`, ...). Never renumber or
-  reorder — apply order is the filename order, and anyone who already ran `0001`-`0004` must be able to
+- **One file per change, numbered sequentially** (`0006_*.sql`, `0007_*.sql`, ...). Never renumber or
+  reorder — apply order is the filename order, and anyone who already ran `0001`-`0005` must be able to
   apply only the new file.
-- **Never edit an applied migration file.** If `0001_core.sql` needs a fix after it's live anywhere,
-  write `0005_fix_x.sql` with the correction (e.g. `alter table` / backfill), even if it feels like the
+- **Never edit an applied migration file.** If any applied migration needs a fix after it is live anywhere,
+  write `0006_fix_x.sql` with the correction (e.g. `alter table` / backfill), even if it feels like the
   "real" fix belongs in `0001`. Editing history breaks anyone who already applied it and breaks the
   "apply in order" contract for new deployments.
-- **Apply order**: SQL Editor, paste-and-run in numeric order, or `supabase link && supabase db push`
-  (the CLI path — respects filename order automatically). RLS is `ON` for every new table by default
+- **Apply order**: use the pinned self-hosted stack's Postgres container with `docker exec -i supabase-db psql -v ON_ERROR_STOP=1 -U postgres -d postgres < migration.sql` (run each numbered migration in order). RLS is `ON` for every new table by default
   (per `docs/architecture.md` §3's standing pattern) — do not ship a migration that skips it.
-- **Staging first.** There is no staging Supabase project wired today (single project, single `.env.local`
-  target per `docs/deployment.md`). Before this repo carries real paying orgs: stand up a second Supabase
-  project as staging, apply new migrations there first, smoke-test (`docs/deployment.md`'s post-deploy
-  checklist), then apply to production. Until that exists, treat every migration as production-bound and
+- **Staging first.** Before this repo carries real paying orgs: stand up a separate staging VPS/Compose stack with separate secrets and persistent volumes, apply new migrations there first, smoke-test, then apply to production. Until that exists, treat every migration as production-bound and
   review it accordingly.
-- **Every table still needs**: `org_id uuid not null references orgs`, `created_at timestamptz default
+- **Every tenant-owned table still needs**: `org_id uuid not null references orgs`, `created_at timestamptz default
   now()`, RLS with the `user_org_ids()` / `is_org_member()` / `has_org_role()` SECURITY DEFINER helper
   pattern already established in `0001_core.sql` — new migrations should reuse those helpers, not
-  redefine tenancy checks inline.
+  redefine tenancy checks inline. Platform-global tables may omit `org_id` only with explicit RLS policies and narrowly scoped platform-admin/public access.
 
 ## Tenant lifecycle
 
@@ -87,24 +82,16 @@ Flip via the `OrgActiveSwitch` on `/admin/platform` → `toggleOrgActive` action
 
 ## Backup / restore
 
-- **Supabase PITR (point-in-time recovery)** is a paid-plan feature — confirm the project's plan before
-  assuming it's on (`.memory/next-steps.md` §5 flags this as unconfirmed). Free-tier projects have no
-  automatic backup.
-- **Manual `pg_dump` recipe** (works on any plan): `pg_dump "$SUPABASE_DB_URL" -Fc -f scarpar_backup_$(date +%Y%m%d).dump`
-  using the connection string from Supabase dashboard → Project Settings → Database → Connection string
-  (use the "direct connection", not the pooler, for `pg_dump`). Restore: `pg_restore -d "$SUPABASE_DB_URL" --clean --if-exists scarpar_backup_*.dump`.
-  Run this on a schedule (cron / GitHub Action) until Phase F's job-queue infra exists — see
-  `docs/saas-roadmap.md` Phase E item 24 for making this recurring and actually drilling a restore.
-- **Storage** (`media` bucket) is not covered by `pg_dump` — back it up separately (`supabase storage`
-  CLI or direct S3-compatible sync) if org media matters for DR.
+- **Database backup**: run `docker exec supabase-db pg_dump -U postgres -d postgres -Fc > fimit_backup_$(date +%Y%m%d).dump`. Store encrypted copies off-host. Restore into a clean staging instance with `pg_restore`; test the procedure before production incidents.
+- **Storage/media** is not covered by `pg_dump`. Back up the persistent Supabase Storage volume or S3-compatible backend separately. Confirm the exact volume path against the pinned official Compose release.
+- **Restore drill**: restore both database and media to an isolated staging stack, then verify tenant login, product images, checkout and order history. Schedule this monthly at minimum.
 
 ## Env / secret rotation
 
 - Three env vars carry real secrets (`docs/deployment.md`): `NEXT_PUBLIC_SUPABASE_URL` (not secret),
   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (public by design, RLS-protected), `SUPABASE_SERVICE_ROLE_KEY`
-  (server-only, bypasses RLS entirely — the one that actually matters for rotation).
-- **Service-role key rotation**: Supabase dashboard → Project Settings → API → regenerate the
-  `service_role` key. Immediately update the Vercel env var (`vercel env` or dashboard) and redeploy —
+  (server-only, bypasses RLS entirely — the one that actually matters for rotation). `SUPABASE_INTERNAL_URL` is a private server-side URL, not a browser setting.
+- **Service-role key rotation**: generate a replacement service-role key using the self-hosted Supabase key-rotation procedure. Update the production `.env`/secret store and recreate the app container —
   every server action using `getAdminClient()` (`src/lib/supabase/admin.ts`) breaks the instant the old
   key is revoked, so this is a "update env, redeploy, confirm, then revoke old key" sequence, not
   "revoke then update."
@@ -125,10 +112,9 @@ Flip via the `OrgActiveSwitch` on `/admin/platform` → `toggleOrgActive` action
   trail) rather than writing a one-off SQL update.
 - **Webhook flood** (courier/payment webhook retries hammering a route): there is no rate limiting in
   `middleware.ts` today (this is exactly `docs/saas-roadmap.md` Phase E item 25's gap) — a flood is
-  currently an availability risk, not just noise. Mitigate ad hoc today by adding a per-source IP block
-  at Vercel's edge config until Phase E's real rate limiting lands.
+  currently an availability risk, not just noise. Mitigate ad hoc with Caddy/network firewall rules until application-level per-tenant rate limiting lands.
 - **RLS misfire symptoms**: a user sees no data / an empty table where they expect rows almost always
-  means `org_members` doesn't have their `(org_id, user_id)` row, or the `scarpar-org` cookie points at
+  means `org_members` doesn't have their `(org_id, user_id)` row, or the `fimit-org` cookie points at
   an org they've been removed from — `requireOrg()` (`src/lib/auth.ts`) already handles the "removed"
   case by redirecting to `/onboarding`, so a *silent* empty-table symptom (page loads, no redirect, no
   data) points at a client-side org-context mismatch (stale cookie vs. server state), not RLS itself
@@ -138,9 +124,7 @@ Flip via the `OrgActiveSwitch` on `/admin/platform` → `toggleOrgActive` action
 
 ## Upgrade strategy for template-derived client repos
 
-Every client build (per the workspace's `scarpar-builder` skill NEW/INTEGRATE modes) starts as either a
-clone of this repo or a copy-in into an existing Next.js site. Once a client repo has diverged with
-custom modules/branding:
+Each merchant store is a tenant in this platform, not a separate code fork. Keep tenant-specific branding, settings and feature choices in the database. If a separate client deployment is ever required, treat it as a derived deployment with its own upgrade and migration record:
 - **Cherry-pick** platform-level fixes (a bug in `verifyPayment()`, a settings-registry addition, a new
   courier adapter) via `git cherry-pick` from this repo into the client repo, provided the client repo
   kept the same module/file layout (`src/modules/<key>/`, `src/lib/settings/registry.ts`, etc.) — this
@@ -149,8 +133,8 @@ custom modules/branding:
   are less likely to have diverged on them.
 - **Re-clone** (rebuild the client's customizations on a fresh clone of this repo) when: the client's
   customizations are small relative to the platform-level changes accumulated since their fork, or when
-  a migration-numbering conflict exists (client added their own `0005_*.sql` that collides with a new
-  platform `0005_*.sql` — renumbering after the fact is exactly the kind of history-edit this doc's
+  a migration-numbering conflict exists (client added their own `0006_*.sql` that collides with a new
+  platform `0006_*.sql` — renumbering after the fact is exactly the kind of history-edit this doc's
   Migration Discipline section says not to do to an *applied* migration, so avoid the collision by
   reserving a numbering block per client in the migration filename, or re-clone instead of resolving it
   by hand).
@@ -164,5 +148,5 @@ custom modules/branding:
   a known, budgeted gap, not an oversight). No uptime checks, no structured logs, no error grouping.
 - **Phase E target** (`docs/saas-roadmap.md` items 22-23, 27): Sentry (`@sentry/nextjs`) for error
   aggregation and alerting, external uptime checks against `/` and one authenticated admin route, a
-  public status page. None of this is built — treat any incident today as "grep Vercel's function logs
+  public status page. None of this is built — treat any incident today as "inspect `docker compose logs fimit-app`
   for the relevant `org_id` or timestamp," which is the only observability that currently exists.

@@ -30,7 +30,7 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | null>(null)
 
 function cartStorageKey(orgSlug: string): string {
-  return `scarpar-cart-${orgSlug}`
+  return `fimit-cart-${orgSlug}`
 }
 
 function sameLine(

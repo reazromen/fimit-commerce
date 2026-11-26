@@ -1,117 +1,63 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="brand/wordmark-dark.svg">
-    <img src="brand/wordmark-light.svg" alt="Scarpar" height="72">
-  </picture>
-</p>
+# The FimiT Commerce
 
-<p align="center">
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-black.svg"></a>
-  <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-black.svg">
-  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth%20%2B%20RLS-black.svg">
-  <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-black.svg"></a>
-</p>
+Bangladesh-first, self-hosted, multi-tenant e-commerce SaaS. One application deployment serves independent merchant stores with their own admin accounts, catalogue, orders, branding and verified domains.
 
-# Scarpar
+## Product scope
 
-**Scarpar is a free, open-source, self-hosted CMS, ecommerce, and business-management platform
-built on Next.js and Supabase** — a multi-tenant alternative to Shopify, Medusa, and Payload for
-running many independent businesses from one deployment.
+- Multi-tenant commerce with PostgreSQL Row-Level Security (RLS).
+- Product catalogue, variants, inventory ledger, customers, discounts, cart, checkout and order lifecycle.
+- Merchant admin, POS, reports, CMS page builder, receipts and delivery tracking.
+- Bangladesh-first COD and manual MFS flows, district delivery zones, Bangla-ready invoices and courier adapter seams.
+- Platform plans, trial/subscription records, invoices and custom-domain verification.
+- Self-hosted application and data services; no production dependency on Vercel or hosted Supabase.
 
-Each organization toggles the modules it needs and picks a vertical preset — ecommerce, courses,
-services, or real estate — instead of forking the codebase per business type. It's a practical base
-for a SaaS starter, an agency's reusable per-client platform, or a single self-hosted store.
+## Technology
 
-It also ships a deep Bangladesh-market layer most generic platforms skip: cash-on-delivery and
-manual bKash/Nagad verification as first-class payment paths, district-based delivery zones with
-local courier support (Steadfast, Pathao), Mushak 6.3-compliant invoices for VAT-registered
-sellers, and Bangla-ready storefront copy.
+Next.js 15, TypeScript, Tailwind CSS, Supabase-compatible APIs, PostgreSQL, Auth, PostgREST, Storage and Caddy.
 
-## Who it's for
+## Repository origin and license
 
-- **Developers** who want a working multi-tenant SaaS starter on Next.js + Supabase instead of
-  building the org/module/RLS scaffolding from scratch.
-- **Agencies** that build ecommerce or CMS sites for multiple clients and want one reusable,
-  self-hosted codebase instead of a per-client rebuild.
-- **Bangladeshi businesses and developers** who need COD, local courier delivery, and Mushak-
-  compliant invoicing out of the box, not bolted on.
-- **Anyone evaluating a self-hosted Shopify, Medusa, or Payload alternative** with commerce, CMS,
-  and delivery management already wired together.
+This project is derived from [sahol3/scarpar](https://github.com/sahol3/scarpar). The upstream MIT license is retained in [LICENSE](LICENSE). Preserve the original copyright and license notice in redistributed copies.
 
-## Feature highlights
+## Local development
 
-- **Commerce** — products, variants, categories, discounts, a full order lifecycle with returns, and
-  an in-store POS terminal, all sharing one order-creation core.
-- **Local delivery & COD** — delivery zones, rider assignment with OTP-confirmed handoff, COD
-  settlement batches, courier adapters (manual today; Steadfast/Pathao real-shaped and config-gated),
-  and public order tracking.
-- **Receipts & printing** — A4 invoices (with a Mushak 6.3 variant), 80mm thermal receipts, and 4x6
-  courier labels with a hand-rolled Code128 barcode — browser print, no PDF service required.
-- **CMS & storefront** — an 11-block page builder (hero, rich text, product grid, banners, FAQ,
-  testimonials, and more) with drafts, publish, and revision history, plus a fast storefront with
-  cart, checkout, and order confirmation.
-- **Business ops** — expense tracking, sales/delivery/financial reports with CSV export (including a
-  Mushak 6.2 register), an audit log, and a settings engine covering ~30 org-level toggles.
-- **Multi-vertical modularity** — the same admin shell serves ecommerce, online courses, service
-  businesses, and real-estate listings by swapping which modules are enabled.
-- **Multi-tenancy & roles** — org-scoped data with Postgres RLS on every table, and a five-level role
-  hierarchy (owner/admin/manager/staff/rider/viewer) plus a separate platform-admin tier.
+1. Node.js 22+ and npm.
+2. Install dependencies: `npm ci`.
+3. Copy `.env.example` to `.env.local`.
+4. Configure a Supabase-compatible project URL, anon key and server-only service-role key.
+5. Optional: set `SUPABASE_INTERNAL_URL` to the private API gateway URL for server-side requests.
+6. Apply migrations in order: `0001_core.sql` through `0005_platform_saas_domains.sql`.
+7. Start: `npm run dev`.
 
-## Tech stack
+## Self-hosted production
 
-Next.js 15 (App Router, TypeScript, RSC) + Supabase (Postgres, Auth, Storage, RLS) + Tailwind v4.
+The production stack uses the official Supabase Docker Compose deployment plus the FimiT app and Caddy overlay:
 
-## Quickstart
+- `deploy/bootstrap-supabase.sh` copies a pinned official Supabase Docker release.
+- `deploy/supabase/docker-compose.fimit.yml` adds the app and reverse proxy and removes direct public access to the API gateway and pooler.
+- `deploy/Dockerfile` builds the Next.js standalone runtime.
+- `deploy/Caddyfile` provides HTTPS for the platform, API hostname and verified merchant domains.
+- `docs/SELF_HOSTING.md` and `docs/deployment.md` contain the deployment and operational procedure.
 
-1. **Prerequisites**: Node 20+.
-2. `npm install`
-3. Create a Supabase project, then apply the schema — SQL Editor → paste and run, in order:
-   `supabase/migrations/0001_core.sql` → `0002_commerce.sql` → `0003_delivery_cms_ops.sql` →
-   `0004_storefront_public_org_read.sql` (or `supabase db push` via the CLI).
-4. Optional demo data — same approach, in order: `supabase/seed/01_core.sql` → `02_commerce.sql` →
-   `03_delivery_cms.sql`. Creates a demo org (slug `demo`); see the file's tail comment to link your own
-   account as its owner.
-5. `cp .env.example .env.local` and fill in your Supabase project URL, anon key, and service role key.
-6. `npm run dev`
-7. Sign up at `/signup`, then complete the `/onboarding` wizard to create your organization.
+Do not deploy the full production stack on the development HServer. Provision a dedicated VPS with the resources described in the self-hosting runbook.
 
-## URL patterns
+## Quality gates
 
-- Public storefront: `/s/[org-slug]`
-- Delivery tracking: `/track/[code]`
+- `npm run typecheck`
+- `npm run build`
+- GitHub Actions CI can be added once the repository connection has workflow-write permission.
+- Validate Compose with the official Supabase Compose file and FimiT overlay.
+- Apply SQL migrations to a disposable PostgreSQL/Supabase test instance before production.
+- Pass tenant-isolation, payment-webhook, domain-verification, backup-restore and load tests before onboarding paying merchants.
 
-## Project structure
+## Documentation
 
-```
-src/app/          routes: (auth), onboarding, (admin)/admin, (store)/s/[org], (print)/print, track, api
-src/modules/      one folder per module — module.config.ts + actions.ts + schemas.ts + components/
-src/lib/          supabase clients, settings engine, money/audit/notify, couriers/, barcode/
-src/components/ui shared component primitives
-supabase/migrations   0001-0004, apply in order
-supabase/seed         01-03, optional demo data (org slug "demo")
-docs/             architecture.md, conventions.md, design-system.md, deployment.md (binding contracts)
-```
+- [Implementation plan and repository audit](docs/FIMIT_IMPLEMENTATION_PLAN.md)
+- [Self-hosting architecture](docs/SELF_HOSTING.md)
+- [Deployment](docs/deployment.md)
+- [Architecture](docs/architecture.md)
+- [Operations runbook](docs/operations.md)
 
-## Docs
+## Commercial offer
 
-- `docs/architecture.md` — binding architecture contract.
-- `docs/conventions.md` — binding build conventions.
-- `docs/design-system.md` — design tokens and aesthetic.
-- `docs/deployment.md` — Vercel + Supabase deploy steps.
-- `docs/saas-roadmap.md` — template → commercial SaaS conversion plan (phased, effort-tagged).
-- `docs/operations.md` — production runbook (migrations, tenant lifecycle, backups, incidents).
-- `docs/extending.md` — developer guide: codebase tour + recipes for modules/blocks/verticals/adapters.
-- `.memory/` — shared project memory: context, feature list, next steps, decisions, build log.
-- [`CHANGELOG.md`](CHANGELOG.md) — release history.
-
-## Contributing
-
-Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow and
-[`docs/extending.md`](docs/extending.md) for step-by-step recipes (add a module, CMS block,
-vertical, or courier/payment adapter). This project follows the
-[Contributor Covenant](CODE_OF_CONDUCT.md).
-
-## License
-
-[MIT](LICENSE) — free to use, modify, and self-host, including commercially. No attribution required
-(though a star is always appreciated).
+The initial acquisition offer is ৳1 development fee. Domain registration, hosting, third-party gateway fees, courier charges and optional customization/support are separate. Publish exact feature limits, renewal prices and support scope before accepting customers.

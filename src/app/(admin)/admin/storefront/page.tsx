@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { Globe } from 'lucide-react'
 import { requireOrg } from '@/lib/auth'
 import { requireModule } from '@/lib/modules'
 import { settingStr } from '@/lib/settings'
@@ -29,7 +31,7 @@ export default async function StorefrontSettingsPage() {
               <code className="rounded bg-muted px-2 py-1 text-xs">{storefrontUrl}</code>
               <CopyButton text={storefrontUrl} />
             </div>
-            <p className="text-xs text-muted-foreground">Custom domains: coming soon.</p>
+            <Link href="/admin/storefront/domain" className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"><Globe className="size-4" /> Connect a custom domain</Link>
           </CardContent>
         </Card>
 

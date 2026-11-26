@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 
 function dismissKey(text: string): string {
-  return `scarpar-announcement-dismissed:${text}`
+  return `fimit-announcement-dismissed:${text}`
 }
 
 /** settings.storefront.announcement text — dismissible, remembered for the browser session. */

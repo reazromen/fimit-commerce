@@ -1,4 +1,4 @@
-# Scarpar — Design System (binding contract)
+# The FimiT — Design System (binding contract)
 
 Read this before building any UI (docs/conventions.md). Source of truth: `src/app/globals.css`
 (tokens) + `src/styles/print.css` (receipts/labels). Aesthetic: **operational calm** — zinc

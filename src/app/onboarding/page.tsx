@@ -9,7 +9,7 @@ import { OrgPicker } from './_components/org-picker'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = { title: 'Set up your organization — Scarpar' }
+export const metadata: Metadata = { title: 'Set up your organization — The FimiT' }
 
 interface Membership {
   org: Org
@@ -54,7 +54,7 @@ export default async function OnboardingPage() {
 
   return (
     <div className="flex min-h-svh flex-col items-center gap-10 bg-muted px-4 py-16">
-      <span className="text-xl font-semibold tracking-tight text-foreground">Scarpar</span>
+      <span className="text-xl font-semibold tracking-tight text-foreground">The FimiT</span>
 
       <div className="flex w-full max-w-2xl flex-col gap-10">
         {memberships.length > 0 ? <OrgPicker memberships={memberships} /> : null}

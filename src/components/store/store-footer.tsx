@@ -39,7 +39,7 @@ export function StoreFooter({
         </div>
 
         <div className="text-2xs border-t border-border pt-4 text-muted-foreground">
-          Powered by <span className="font-medium">Scarpar</span>
+          Powered by <span className="font-medium">The FimiT</span>
         </div>
       </div>
     </footer>

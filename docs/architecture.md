@@ -1,7 +1,7 @@
-# Scarpar — Architecture (BINDING CONTRACT)
+# The FimiT — Architecture (BINDING CONTRACT)
 
-Scarpar is a multi-tenant, module-based CMS + commerce + business-management platform for Bangladeshi
-businesses. Next.js 15 (App Router, TS, RSC) + Supabase (Postgres, Auth, Storage, RLS) + Tailwind v4.
+The FimiT is a multi-tenant, module-based CMS + commerce + business-management platform for Bangladeshi
+businesses. Next.js 15 (App Router, TS, RSC) + self-hosted Supabase services (Postgres, Auth, Storage, RLS) + Tailwind v4. Production runs on our own VPS behind Caddy; server-side Supabase traffic uses the private Docker network.
 One deployment serves many organizations ("orgs" — the spec's "merchant/tenant"). Modules toggle per
 org; vertical presets (ecommerce / courses / services / realestate) pick module sets.
 
@@ -208,7 +208,7 @@ Accessors in `src/lib/settings/index.ts`: `getOrgSettings(orgId)` (one query, me
 
 ## 6. Auth, tenancy, roles
 
-Admin auth: Supabase email/password. Active org: cookie `scarpar-org` (uuid), validated against org_members
+Admin auth: Supabase email/password. Active org: cookie `fimit-org` (uuid), validated against org_members
 on every request via `requireOrg()` → `{ user, org, role, settings }` (src/lib/auth.ts, React cache()).
 Roles: owner > admin > manager > staff > rider > viewer. `requireRole(ctx, 'manager')` throws/redirects.
 Rider role sees only deliveries nav. Storefront: anon; org resolved from `[org]` slug param server-side.
@@ -272,3 +272,19 @@ chokepoint, local rider delivery + COD settlement, receipts/labels printing, POS
 checkout (COD + manual MFS), reports, notifications (in-app), audit log, staff invites, settings engine.
 STUBBED (real interfaces + config UI, guarded execution): Steadfast/Pathao API calls, UddoktaPay live charge,
 FraudBD live lookup, SMS/email providers, SSLCommerz/bKash-direct/Nagad-direct.
+
+
+## 14. The FimiT SaaS extensions (migration 0005)
+
+Migration `0005_platform_saas_domains.sql` adds the commercial control plane:
+
+- `platform_plans`: public active plan catalogue with BDT prices stored in paisa, trial days, module allowlists and JSON limits.
+- `platform_subscriptions`: one subscription per org, with trial/active/past_due/suspended/cancelled states and provider references. New orgs receive a 14-day Starter trial through an org-insert trigger; existing orgs are grandfathered active.
+- `platform_invoices`: platform-level subscription invoices; merchant members may read their org invoices, but payment state is server-controlled.
+- `platform_payment_events`: idempotency ledger for provider callbacks; service-role only.
+- `custom_domains`: merchant-owned hostnames with TXT ownership challenges and verified/disabled states. Writes require owner/admin role.
+- `resolve_store_domain(hostname)`: SECURITY DEFINER resolver callable by anon/authenticated that returns only the active verified store slug, never the verification token or domain row.
+
+The merchant domain UI verifies `_fimit-verification.<hostname>` TXT records. Middleware rewrites verified hosts to `/s/<org-slug>`. Caddy's on-demand TLS `ask` endpoint uses the same resolver, so unverified domains cannot trigger certificate issuance. DNS A/AAAA/CNAME routing and public certificate issuance still require production DNS and a reachable server.
+
+Self-hosting contract: browsers use `NEXT_PUBLIC_SUPABASE_URL`; server components, actions, middleware and service-role clients may use `SUPABASE_INTERNAL_URL` (for example `http://api-gw:8000`) on the private Docker network. Never expose `SUPABASE_SERVICE_ROLE_KEY` to client code.

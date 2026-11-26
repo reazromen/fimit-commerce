@@ -76,7 +76,7 @@ export async function createCharge(
     },
     body: JSON.stringify({
       full_name: input.customer.name,
-      email: input.customer.email || 'guest@scarpar.app',
+      email: input.customer.email || 'guest@example.com',
       amount: fromPaisa(input.amount).toFixed(2),
       metadata: { order_no: input.orderNo },
       redirect_url: input.redirectUrl,

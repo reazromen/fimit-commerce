@@ -6,7 +6,7 @@ import { LoginForm } from '../_components/login-form'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = { title: 'Log in — Scarpar' }
+export const metadata: Metadata = { title: 'Log in — The FimiT' }
 
 export default async function LoginPage({ searchParams }: PageProps) {
   const params = await searchParams

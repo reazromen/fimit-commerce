@@ -77,11 +77,11 @@ export function Sidebar({ org, orgs, nav, collapsed = false, onNavigate, onToggl
       >
         {collapsed ? (
           <span className="flex size-7 items-center justify-center rounded-md bg-primary text-[13px] font-bold text-primary-foreground">
-            S
+            F
           </span>
         ) : (
           <span className="text-[15px] font-semibold tracking-tight text-sidebar-foreground">
-            Scarpar
+            The FimiT
           </span>
         )}
       </div>

@@ -1,5 +1,5 @@
 /**
- * Scarpar print stylesheets — receipts & labels.
+ * The FimiT print stylesheets — receipts & labels.
  *
  * Self-contained: does NOT depend on globals.css tokens/variables. Print routes render
  * outside the admin chrome (docs/conventions.md — "Print pages: bare layout, load

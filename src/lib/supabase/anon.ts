@@ -7,7 +7,7 @@ import { env } from '@/lib/env'
  * storefront reads (products, categories, cms_pages, reviews, listings).
  */
 export function getAnonClient() {
-  return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+  return createClient(env.SUPABASE_SERVER_URL, env.SUPABASE_ANON_KEY, {
     auth: { persistSession: false },
   })
 }

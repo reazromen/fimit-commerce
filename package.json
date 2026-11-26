@@ -1,15 +1,15 @@
 {
-  "name": "scarpar",
+  "name": "fimit-commerce",
   "version": "0.1.0",
-  "description": "Open-source, multi-tenant, module-based CMS + commerce + business-management platform. Next.js 15 + Supabase. Ecommerce, courses, services, and real-estate verticals from one codebase.",
+  "description": "Bangladesh-first self-hosted multi-tenant e-commerce SaaS by The FimiT",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sahol3/scarpar.git"
+    "url": "https://github.com/reazromen/fimit-commerce.git"
   },
-  "homepage": "https://github.com/sahol3/scarpar#readme",
+  "homepage": "https://github.com/reazromen/fimit-commerce#readme",
   "bugs": {
-    "url": "https://github.com/sahol3/scarpar/issues"
+    "url": "https://github.com/reazromen/fimit-commerce/issues"
   },
   "keywords": [
     "nextjs",

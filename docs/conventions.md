@@ -1,4 +1,4 @@
-# Scarpar — Build Conventions (BINDING for every slice)
+# The FimiT — Build Conventions (BINDING for every slice)
 
 Read docs/architecture.md and docs/design-system.md first. Deviations are bugs.
 

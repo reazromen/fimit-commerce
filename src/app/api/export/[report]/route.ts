@@ -33,7 +33,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     from: searchParams.get('from') ?? undefined,
     to: searchParams.get('to') ?? undefined,
   })
-  const filename = `scarpar-${report}-${range.from}-${range.to}.csv`
+  const filename = `fimit-${report}-${range.from}-${range.to}.csv`
 
   switch (report) {
     case 'sales': {

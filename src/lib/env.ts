@@ -8,6 +8,8 @@ const APP_URL_FALLBACK = 'http://localhost:3000'
 
 export const env = {
   SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || SUPABASE_URL_FALLBACK,
+  // Server-side clients can use the private Docker network; browser clients must use the public URL.
+  SUPABASE_SERVER_URL: process.env.SUPABASE_INTERNAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || SUPABASE_URL_FALLBACK,
   SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || SUPABASE_ANON_KEY_FALLBACK,
   SUPABASE_SERVICE_ROLE_KEY:
     process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_SERVICE_ROLE_KEY_FALLBACK,

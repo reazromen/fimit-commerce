@@ -3,15 +3,22 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { env } from '@/lib/env'
 
-// Kept as a literal (not imported from '@/lib/auth') to keep middleware's
-// dependency graph minimal — it runs on every request. Keep in sync with
-// ORG_COOKIE in src/lib/auth.ts.
-const ORG_COOKIE = 'scarpar-org'
+// Keep in sync with ORG_COOKIE in src/lib/auth.ts.
+const ORG_COOKIE = 'fimit-org'
+const RESERVED_STORE_PATHS = new Set([
+  'admin', 'api', 'login', 'signup', 'onboarding', 'forgot-password',
+  'reset-password', 'invite', 'track', 'pricing', 's', 'health',
+])
+
+function isReservedStorePath(pathname: string): boolean {
+  const firstSegment = pathname.split('/').filter(Boolean)[0] ?? ''
+  return RESERVED_STORE_PATHS.has(firstSegment)
+}
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request })
 
-  const supabase = createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+  const supabase = createServerClient(env.SUPABASE_SERVER_URL, env.SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return request.cookies.getAll()
@@ -47,6 +54,23 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = '/onboarding'
       return NextResponse.redirect(url)
+    }
+  }
+
+  // Resolve a verified merchant domain to its organization slug. The SQL
+  // SECURITY DEFINER function returns only the public slug, never domain
+  // verification secrets or tenant records. Unknown hosts are not rewritten.
+  const host = request.nextUrl.hostname.toLowerCase().replace(/\.$/, '')
+  const platformHost = new URL(env.APP_URL).hostname.toLowerCase().replace(/\.$/, '')
+  if (host !== platformHost && !isReservedStorePath(pathname)) {
+    const { data: storeSlug, error } = await supabase.rpc('resolve_store_domain', {
+      p_hostname: host,
+    })
+
+    if (!error && typeof storeSlug === 'string' && storeSlug.length > 0) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/s/${storeSlug}${pathname === '/' ? '' : pathname}`
+      return NextResponse.rewrite(url, { headers: response.headers })
     }
   }
 

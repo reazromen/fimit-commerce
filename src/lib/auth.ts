@@ -8,7 +8,7 @@ import { getOrgSettings } from '@/lib/settings'
 import type { Org, Role } from '@/types/db'
 
 /** Cookie holding the active org id (docs/architecture.md §6). */
-export const ORG_COOKIE = 'scarpar-org'
+export const ORG_COOKIE = 'fimit-org'
 
 export const ROLE_RANK: Record<Role, number> = {
   owner: 6,
@@ -45,7 +45,7 @@ export async function requireUser(): Promise<User> {
 }
 
 /**
- * Reads the scarpar-org cookie, loads the org + the caller's membership role
+ * Reads the fimit-org cookie, loads the org + the caller's membership role
  * + org settings (parallel query set), and returns the full OrgContext.
  * Redirects to /onboarding if the cookie is missing or points at an org the
  * user isn't (or is no longer) a member of.

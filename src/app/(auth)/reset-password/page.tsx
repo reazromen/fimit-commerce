@@ -4,7 +4,7 @@ import { ResetPasswordForm } from '../_components/reset-password-form'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = { title: 'Set a new password — Scarpar' }
+export const metadata: Metadata = { title: 'Set a new password — The FimiT' }
 
 export default function ResetPasswordPage() {
   return <ResetPasswordForm />

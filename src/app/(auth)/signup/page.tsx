@@ -6,7 +6,7 @@ import { SignupForm } from '../_components/signup-form'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = { title: 'Sign up — Scarpar' }
+export const metadata: Metadata = { title: 'Sign up — The FimiT' }
 
 export default async function SignupPage({ searchParams }: PageProps) {
   const params = await searchParams

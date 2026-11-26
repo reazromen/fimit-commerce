@@ -1,0 +1,21 @@
+{
+	email {$ACME_EMAIL}
+	on_demand_tls {
+		ask http://fimit-app:3000/api/domains/authorize?domain={host}
+	}
+}
+
+{$FIMIT_APP_HOST} {
+	reverse_proxy fimit-app:3000
+}
+
+{$SUPABASE_API_HOST} {
+	reverse_proxy api-gw:8000
+}
+
+https:// {
+	tls {
+		on_demand
+	}
+	reverse_proxy fimit-app:3000
+}

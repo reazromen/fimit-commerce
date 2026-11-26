@@ -18,7 +18,7 @@ if (typeof window !== 'undefined') {
  * documented in conventions.md (settings, notify, audit).
  */
 export function getAdminClient() {
-  return createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  return createClient(env.SUPABASE_SERVER_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
   })
 }

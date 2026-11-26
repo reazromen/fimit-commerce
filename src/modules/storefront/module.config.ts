@@ -4,5 +4,8 @@ export const config: ModuleDef = {
   key: 'storefront',
   name: 'Storefront',
   description: 'Public storefront theme and checkout settings.',
-  nav: [{ label: 'Storefront', href: '/admin/storefront', icon: 'Store' }],
+  nav: [
+    { label: 'Storefront', href: '/admin/storefront', icon: 'Store' },
+    { label: 'Custom domain', href: '/admin/storefront/domain', icon: 'Globe' },
+  ],
 }

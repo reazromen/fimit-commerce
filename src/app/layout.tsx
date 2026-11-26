@@ -16,7 +16,7 @@ const notoSansBengali = Noto_Sans_Bengali({
 });
 
 export const metadata: Metadata = {
-  title: "Scarpar",
+  title: "The FimiT",
   description: "Modular commerce & business management platform",
 };
 
